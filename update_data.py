@@ -195,16 +195,23 @@ def update_data():
         if curr_upper not in new_data:
             continue
         
-        # 如果数据异常被标记跳过，则复制昨天的数据
+        # 如果数据异常被标记跳过，则填入 null（显示为空白）
         if new_data[curr_upper].get('skip', False):
-            print(f"  {curr_upper}: 数据异常，使用昨日数据")
-            if idx > 0:
-                for exp in ['short', 'medium', 'long']:
-                    data[f'{curr}_price'][exp][idx] = data[f'{curr}_price'][exp][idx-1]
-                    data[f'{curr}_daily'][exp][idx] = data[f'{curr}_daily'][exp][idx-1]
-                    data[f'{curr}_iv'][exp][idx] = data[f'{curr}_iv'][exp][idx-1]
-                for r in ['sm', 'sl', 'ml']:
-                    data[f'{curr}_ratio'][r][idx] = data[f'{curr}_ratio'][r][idx-1]
+            print(f"  {curr_upper}: 数据异常，该日留空")
+            for exp in ['short', 'medium', 'long']:
+                if idx >= len(data[f'{curr}_price'][exp]):
+                    data[f'{curr}_price'][exp].append(None)
+                    data[f'{curr}_daily'][exp].append(None)
+                    data[f'{curr}_iv'][exp].append(None)
+                else:
+                    data[f'{curr}_price'][exp][idx] = None
+                    data[f'{curr}_daily'][exp][idx] = None
+                    data[f'{curr}_iv'][exp][idx] = None
+            for r in ['sm', 'sl', 'ml']:
+                if idx >= len(data[f'{curr}_ratio'][r]):
+                    data[f'{curr}_ratio'][r].append(None)
+                else:
+                    data[f'{curr}_ratio'][r][idx] = None
             continue
         
         curr_data = new_data[curr_upper]
