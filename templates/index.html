@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短长期比例近两年监测 | 期权波动率趋势</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #c9d1d9;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            background: linear-gradient(90deg, #58a6ff, #a371f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #8b949e;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .update-info {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #58a6ff;
+        }
+
+        /* 核心趋势区域 */
+        .trend-hero {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .trend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .trend-title {
+            font-size: 1.4em;
+            color: #f0f6fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .trend-title::before {
+            content: '📈';
+        }
+        
+        .time-range-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn:hover, .tab-btn.active {
+            background: #58a6ff;
+            color: #fff;
+            border-color: #58a6ff;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #8b949e;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        
+        .legend-color.btc { background: #f7931a; }
+        .legend-color.eth { background: #627eea; }
+        .legend-color.base { background: #30363d; border: 1px dashed #8b949e; height: 1px; }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #58a6ff;
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-symbol {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .stat-symbol.btc { color: #f7931a; }
+        .stat-symbol.eth { color: #627eea; }
+        
+        .coin-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+        
+        .coin-icon.btc { background: rgba(247, 147, 26, 0.2); }
+        .coin-icon.eth { background: rgba(98, 126, 234, 0.2); }
+        
+        .stat-main {
+            margin: 20px 0;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #f0f6fc;
+        }
+        
+        .stat-change {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .stat-change.up { color: #3fb950; }
+        .stat-change.down { color: #f85149; }
+        
+        .stat-footer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #30363d;
+            font-size: 0.85em;
+        }
+        
+        .stat-detail {
+            text-align: center;
+        }
+        
+        .stat-detail-label {
+            color: #6e7681;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+        
+        .stat-detail-value {
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        /* 历史统计 */
+        .history-stats {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #f0f6fc;
+            margin-bottom: 25px;
+            padding-left: 15px;
+            border-left: 4px solid #58a6ff;
+        }
+        
+        .percentile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .percentile-item {
+            text-align: center;
+            padding: 20px;
+            background: #21262d;
+            border-radius: 10px;
+        }
+        
+        .percentile-label {
+            color: #8b949e;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        
+        .percentile-value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        
+        .percentile-value.extreme { color: #f85149; }
+        .percentile-value.high { color: #f0883e; }
+        .percentile-value.normal { color: #3fb950; }
+        .percentile-value.low { color: #58a6ff; }
+        
+        /* 关键事件 */
+        .events-section {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #21262d;
+            border-radius: 10px;
+            border-left: 4px solid transparent;
+        }
+        
+        .event-item.crisis { border-left-color: #f85149; }
+        .event-item.warning { border-left-color: #f0883e; }
+        .event-item.info { border-left-color: #58a6ff; }
+        
+        .event-date {
+            font-size: 0.85em;
+            color: #6e7681;
+            min-width: 100px;
+        }
+        
+        .event-desc {
+            flex: 1;
+            color: #c9d1d9;
+        }
+        
+        .event-value {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6e7681;
+            font-size: 0.85em;
+            border-top: 1px solid #30363d;
+            margin-top: 40px;
+        }
+        
+        .data-source {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .chart-container { height: 350px; }
+            .trend-header { flex-direction: column; align-items: flex-start; }
+            .time-range-tabs { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>短长期比例近两年监测</h1>
+            <div class="subtitle">
+                追踪 BTC/ETH 期权短期(5天)与长期(26天)隐含波动率比例的历史趋势
+                <br>识别市场恐慌与贪婪的周期性变化
+            </div>
+            <div class="update-info">
+                数据范围: 2023-01 至 2026-03 | 最后更新: <span id="lastUpdate">加载中...</span>
+            </div>
+        </header>
+
+        <!-- 核心趋势图 -->
+        <div class="trend-hero">
+            <div class="trend-header">
+                <div class="trend-title">历史趋势 (2023-2026)</div>
+                <div class="time-range-tabs">
+                    <button class="tab-btn" data-range="30">30天</button>
+                    <button class="tab-btn" data-range="90">3个月</button>
+                    <button class="tab-btn" data-range="180">6个月</button>
+                    <button class="tab-btn active" data-range="all">全部</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+            
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color btc"></div>
+                    <span>BTC 短长期比例</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color eth"></div>
+                    <span>ETH 短长期比例</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color base"></div>
+                    <span>1.0 基准线 (短期=长期)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 当前统计 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-symbol btc">
+                        <span class="coin-icon btc">₿</span>
+                        BTC 短长期比例
+                    </div>
+                    <span id="btcBadge">--</span>
+                </div>
+                <div class="stat-main">
+                    <div class="stat-value" id="btcRatio">--</div>
+                    <div class="stat-change" id="btcChange">--</div>
+                </div>
+                <div class="stat-footer">
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">短期 IV</div>
+                        <div class="stat-detail-value" id="btcShortIV">--</div>
+                    </div>
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">长期 IV</div>
+                        <div class="stat-detail-value" id="btcLongIV">--</div>
+                    </div>
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">现货价</div>
+                        <div class="stat-detail-value" id="btcPrice">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-symbol eth">
+                        <span class="coin-icon eth">Ξ</span>
+                        ETH 短长期比例
+                    </div>
+                    <span id="ethBadge">--</span>
+                </div>
+                <div class="stat-main">
+                    <div class="stat-value" id="ethRatio">--</div>
+                    <div class="stat-change" id="ethChange">--</div>
+                </div>
+                <div class="stat-footer">
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">短期 IV</div>
+                        <div class="stat-detail-value" id="ethShortIV">--</div>
+                    </div>
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">长期 IV</div>
+                        <div class="stat-detail-value" id="ethLongIV">--</div>
+                    </div>
+                    <div class="stat-detail">
+                        <div class="stat-detail-label">现货价</div>
+                        <div class="stat-detail-value" id="ethPrice">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史分位数 -->
+        <div class="history-stats">
+            <h2 class="section-title">历史位置分析</h2>
+            <div class="percentile-grid">
+                <div class="percentile-item">
+                    <div class="percentile-label">BTC 当前历史分位</div>
+                    <div class="percentile-value" id="btcPercentile">--</div>
+                </div>
+                <div class="percentile-item">
+                    <div class="percentile-label">BTC 历史最高</div>
+                    <div class="percentile-value" id="btcMax">--</div>
+                </div>
+                <div class="percentile-item">
+                    <div class="percentile-label">BTC 历史最低</div>
+                    <div class="percentile-value" id="btcMin">--</div>
+                </div>
+                <div class="percentile-item">
+                    <div class="percentile-label">BTC 平均值</div>
+                    <div class="percentile-value" id="btcMean">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键事件 -->
+        <div class="events-section">
+            <h2 class="section-title">关键市场事件</h2>
+            <div class="events-list" id="eventsList">
+                <div class="event-item info">
+                    <div class="event-date">加载中...</div>
+                    <div class="event-desc">正在分析历史数据中的极端值...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>数据来源: <span class="data-source">Deribit API</span> <span class="data-source">历史CSV 2023-2026</span></p>
+            <p>模型: Kimi K2.5 | 构建时间: 2026-03-06</p>
+        </div>
+    </div>
+
+    <script>
+        let mainChart;
+        let allData = { dates: [], btc_ratios: [], eth_ratios: [] };
+
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'BTC 短长期比例',
+                            data: [],
+                            borderColor: '#f7931a',
+                            backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'ETH 短长期比例',
+                            data: [],
+                            borderColor: '#627eea',
+                            backgroundColor: 'rgba(98, 126, 234, 0.1)',
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                            titleColor: '#58a6ff',
+                            bodyColor: '#c9d1d9',
+                            borderColor: '#30363d',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + 'x';
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 1,
+                                    yMax: 1,
+                                    borderColor: 'rgba(139, 148, 158, 0.5)',
+                                    borderWidth: 1,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        display: true,
+                                        content: '基准线 (1.0)',
+                                        position: 'end',
+                                        color: '#8b949e'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                            ticks: { 
+                                color: '#6e7681',
+                                maxTicksLimit: 12
+                            }
+                        },
+                        y: {
+                            grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                            ticks: { color: '#6e7681' },
+                            title: {
+                                display: true,
+                                text: '短长期 IV 比例',
+                                color: '#8b949e'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 加载历史数据
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/ratios/chart');
+                allData = await response.json();
+                
+                updateChart('all');
+                updateStats(allData);
+                findExtremeEvents(allData);
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        // 更新图表时间范围
+        function updateChart(range) {
+            let dates = allData.dates;
+            let btc = allData.btc_ratios;
+            let eth = allData.eth_ratios;
+            
+            if (range !== 'all') {
+                const days = parseInt(range);
+                dates = dates.slice(-days);
+                btc = btc.slice(-days);
+                eth = eth.slice(-days);
+            }
+            
+            mainChart.data.labels = dates;
+            mainChart.data.datasets[0].data = btc;
+            mainChart.data.datasets[1].data = eth;
+            mainChart.update();
+        }
+
+        // 更新统计数据
+        function updateStats(data) {
+            if (!data.btc_ratios || data.btc_ratios.length === 0) return;
+            
+            const btcRatios = data.btc_ratios.filter(x => x !== null);
+            const ethRatios = data.eth_ratios.filter(x => x !== null);
+            
+            // 计算统计值
+            const btcCurrent = btcRatios[btcRatios.length - 1];
+            const btcMax = Math.max(...btcRatios);
+            const btcMin = Math.min(...btcRatios);
+            const btcMean = btcRatios.reduce((a, b) => a + b, 0) / btcRatios.length;
+            
+            // 分位数计算
+            const sorted = [...btcRatios].sort((a, b) => a - b);
+            const percentile = (sorted.indexOf(btcCurrent) / sorted.length * 100).toFixed(1);
+            
+            // 更新DOM
+            document.getElementById('btcPercentile').textContent = percentile + '%';
+            document.getElementById('btcPercentile').className = 'percentile-value ' + 
+                (percentile > 90 ? 'extreme' : percentile > 70 ? 'high' : percentile < 10 ? 'low' : 'normal');
+            
+            document.getElementById('btcMax').textContent = btcMax.toFixed(2) + 'x';
+            document.getElementById('btcMin').textContent = btcMin.toFixed(2) + 'x';
+            document.getElementById('btcMean').textContent = btcMean.toFixed(2) + 'x';
+        }
+
+        // 查找极端事件
+        function findExtremeEvents(data) {
+            const events = [];
+            const btcRatios = data.btc_ratios;
+            const dates = data.dates;
+            
+            // 找最大值（前3）
+            const indexed = btcRatios.map((v, i) => ({ v, i })).filter(x => x.v !== null);
+            indexed.sort((a, b) => b.v - a.v);
+            
+            indexed.slice(0, 3).forEach(item => {
+                events.push({
+                    date: dates[item.i],
+                    desc: 'BTC 短长期比例达到历史极高点',
+                    value: item.v.toFixed(2) + 'x',
+                    type: 'crisis'
+                });
+            });
+            
+            // 找最小值
+            indexed.slice(-2).forEach(item => {
+                events.push({
+                    date: dates[item.i],
+                    desc: 'BTC 短长期比例达到历史极低点',
+                    value: item.v.toFixed(2) + 'x',
+                    type: 'info'
+                });
+            });
+            
+            // 按日期排序
+            events.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // 渲染
+            const container = document.getElementById('eventsList');
+            container.innerHTML = events.map(e => `
+                <div class="event-item ${e.type}">
+                    <div class="event-date">${e.date}</div>
+                    <div class="event-desc">${e.desc}</div>
+                    <div class="event-value" style="color: ${e.type === 'crisis' ? '#f85149' : '#58a6ff'}">${e.value}</div>
+                </div>
+            `).join('');
+        }
+
+        // 加载当前数据
+        async function loadCurrent() {
+            try {
+                const response = await fetch('/api/current');
+                const data = await response.json();
+                
+                if (data.error) return;
+                
+                // 更新当前值
+                document.getElementById('btcRatio').textContent = data.btc_ratio_sl ? data.btc_ratio_sl.toFixed(2) + 'x' : '--';
+                document.getElementById('ethRatio').textContent = data.eth_ratio_sl ? data.eth_ratio_sl.toFixed(2) + 'x' : '--';
+                
+                document.getElementById('btcShortIV').textContent = data.btc_short_iv ? data.btc_short_iv.toFixed(1) + '%' : '--';
+                document.getElementById('btcLongIV').textContent = data.btc_long_iv ? data.btc_long_iv.toFixed(1) + '%' : '--';
+                document.getElementById('ethShortIV').textContent = data.eth_short_iv ? data.eth_short_iv.toFixed(1) + '%' : '--';
+                document.getElementById('ethLongIV').textContent = data.eth_long_iv ? data.eth_long_iv.toFixed(1) + '%' : '--';
+                
+                document.getElementById('btcPrice').textContent = data.btc_price ? '$' + data.btc_price.toLocaleString() : '--';
+                document.getElementById('ethPrice').textContent = data.eth_price ? '$' + data.eth_price.toLocaleString() : '--';
+                
+                if (data.timestamp) {
+                    document.getElementById('lastUpdate').textContent = new Date(data.timestamp).toLocaleString('zh-CN');
+                }
+                
+                // 状态徽章
+                updateBadge('btcBadge', data.btc_ratio_sl);
+                updateBadge('ethBadge', data.eth_ratio_sl);
+                
+            } catch (error) {
+                console.error('Error loading current:', error);
+            }
+        }
+
+        function updateBadge(id, ratio) {
+            const el = document.getElementById(id);
+            if (!ratio) {
+                el.textContent = '--';
+                el.style.cssText = 'padding: 4px 12px; border-radius: 20px; font-size: 0.85em; background: #21262d; color: #8b949e;';
+                return;
+            }
+            
+            let text, color, bg;
+            if (ratio > 1.5) {
+                text = '高恐慌';
+                color = '#f85149';
+                bg = 'rgba(248, 81, 73, 0.2)';
+            } else if (ratio > 1.2) {
+                text = '偏恐慌';
+                color = '#f0883e';
+                bg = 'rgba(240, 136, 62, 0.2)';
+            } else if (ratio < 0.8) {
+                text = '低恐慌';
+                color = '#3fb950';
+                bg = 'rgba(63, 185, 80, 0.2)';
+            } else {
+                text = '正常';
+                color = '#8b949e';
+                bg = '#21262d';
+            }
+            
+            el.textContent = text;
+            el.style.cssText = `padding: 4px 12px; border-radius: 20px; font-size: 0.85em; background: ${bg}; color: ${color};`;
+        }
+
+        // 事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            loadHistory();
+            loadCurrent();
+            
+            // Tab切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateChart(this.dataset.range);
+                });
+            });
+            
+            // 每5分钟刷新
+            setInterval(loadCurrent, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>
