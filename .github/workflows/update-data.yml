@@ -1,0 +1,59 @@
+name: Update Data from Deribit
+
+on:
+  schedule:
+    # 每8小时运行一次 (UTC时间: 00:00, 08:00, 16:00)
+    - cron: '0 0,8,16 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: pip install requests
+      
+    - name: Fetch latest data from Deribit
+      run: python update_data.py
+      
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if git diff --quiet docs/charts_6_data.json; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "没有数据变化"
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "检测到数据变化"
+        fi
+        
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.changed == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add docs/charts_6_data.json
+        git commit -m "自动更新: $(date +'%Y-%m-%d %H:%M') 期权数据"
+        git push
+        
+    - name: Summary
+      run: |
+        echo "### 更新摘要" >> $GITHUB_STEP_SUMMARY
+        echo "- 运行时间: $(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
+          echo "- 状态: ✅ 数据已更新并提交" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- 状态: ⏭️ 无数据变化" >> $GITHUB_STEP_SUMMARY
+        fi
