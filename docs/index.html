@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>短长期比例监测 | 六图分析</title>
+    <title>短长期比例近两年监测 | 期权价格监测</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -15,7 +16,7 @@
             padding: 20px;
         }
         .container { max-width: 1600px; margin: 0 auto; }
-        header { text-align: center; padding: 30px 0; border-bottom: 1px solid #30363d; margin-bottom: 30px; }
+        header { text-align: center; padding: 30px 0; border-bottom: 1px solid #30363d; margin-bottom: 20px; }
         h1 {
             font-size: 2.5em;
             font-weight: 700;
@@ -25,11 +26,151 @@
             margin-bottom: 10px;
         }
         .subtitle { color: #8b949e; font-size: 1em; }
+        .update-time { color: #58a6ff; font-size: 0.9em; margin-top: 10px; }
+
+        /* 概览面板 */
+        .overview-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .overview-card {
+            background: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .overview-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+        .overview-header .coin-icon {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1em; font-weight: bold;
+        }
+        .overview-header .coin-icon.btc { background: rgba(247, 147, 26, 0.2); color: #f7931a; }
+        .overview-header .coin-icon.eth { background: rgba(98, 126, 234, 0.2); color: #627eea; }
+        .overview-header h3 { color: #f0f6fc; font-size: 1.2em; }
+        
+        /* 现货价格 */
+        .spot-price {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .spot-price.btc { color: #f7931a; }
+        .spot-price.eth { color: #627eea; }
+
+        /* 期权详情表格 */
+        .options-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .options-table th, .options-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #30363d;
+        }
+        .options-table th {
+            color: #8b949e;
+            font-weight: 500;
+            font-size: 0.85em;
+        }
+        .options-table td {
+            color: #c9d1d9;
+        }
+        .options-table .term-short { color: #ff6384; }
+        .options-table .term-medium { color: #36a2eb; }
+        .options-table .term-long { color: #4bc0c0; }
+
+        /* 比例分析区域 */
+        .ratio-analysis {
+            background: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .ratio-analysis h3 {
+            color: #f0f6fc;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .ratio-item {
+            background: #21262d;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .ratio-label {
+            font-size: 0.8em;
+            color: #8b949e;
+            margin-bottom: 5px;
+        }
+        .ratio-value {
+            font-size: 1.6em;
+            font-weight: 700;
+        }
+        .ratio-value.high { color: #f85149; }
+        .ratio-value.normal { color: #3fb950; }
+        .ratio-value.low { color: #58a6ff; }
+
+        /* 关键变化 */
+        .key-changes {
+            background: rgba(248, 81, 73, 0.1);
+            border-left: 4px solid #f85149;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+        }
+        .key-changes h4 {
+            color: #f85149;
+            margin-bottom: 10px;
+        }
+        .key-changes ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .key-changes li {
+            color: #c9d1d9;
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .key-changes li::before {
+            content: "•";
+            color: #f85149;
+            position: absolute;
+            left: 5px;
+        }
+
+        /* 图表区域 */
+        .section-title {
+            font-size: 1.3em;
+            color: #f0f6fc;
+            margin: 25px 0 15px;
+            padding-left: 12px;
+            border-left: 4px solid #58a6ff;
+        }
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 25px;
         }
         .chart-card {
             background: rgba(22, 27, 34, 0.8);
@@ -37,51 +178,24 @@
             border-radius: 12px;
             padding: 20px;
         }
-        .chart-title {
-            font-size: 1.1em;
-            color: #f0f6fc;
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid #30363d;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        .chart-title .coin { font-weight: bold; }
-        .chart-title .coin.btc { color: #f7931a; }
-        .chart-title .coin.eth { color: #627eea; }
-        .chart-container { position: relative; height: 350px; }
-        .legend-custom {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 10px;
-            font-size: 0.85em;
-        }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .stat-box {
-            background: rgba(22, 27, 34, 0.8);
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-label { color: #8b949e; font-size: 0.85em; margin-bottom: 8px; }
-        .stat-value { font-size: 1.8em; font-weight: 700; color: #f0f6fc; }
-        .stat-value.btc { color: #f7931a; }
-        .stat-value.eth { color: #627eea; }
+        .chart-title { font-size: 1.1em; color: #f0f6fc; }
+        .chart-subtitle { font-size: 0.8em; color: #6e7681; }
+        .chart-container { position: relative; height: 320px; }
+
+        /* 时间切换 */
         .time-tabs {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .tab-btn {
             padding: 8px 20px;
@@ -94,6 +208,31 @@
             transition: all 0.2s;
         }
         .tab-btn:hover, .tab-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
+
+        /* 历史统计 */
+        .history-stats {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .stat-box {
+            background: #21262d;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-title { font-size: 0.8em; color: #6e7681; margin-bottom: 8px; }
+        .stat-number { font-size: 1.4em; font-weight: 700; color: #f0f6fc; }
+        .stat-number.extreme { color: #f85149; }
+        .stat-number.high { color: #f0883e; }
+
         .footer {
             text-align: center;
             padding: 30px;
@@ -102,138 +241,163 @@
             border-top: 1px solid #30363d;
             margin-top: 40px;
         }
+        .data-source {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+
         @media (max-width: 1024px) {
-            .charts-grid { grid-template-columns: 1fr; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .overview-panel, .charts-grid { grid-template-columns: 1fr; }
+            .ratio-grid, .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📊 短长期比例监测 - 六图分析</h1>
-            <div class="subtitle">BTC/ETH 期权价格趋势 | 日均价格 | 比例分析</div>
+            <h1>📊 短长期比例近两年监测</h1>
+            <div class="subtitle">BTC/ETH 期权价格监测 | 期限结构分析 | 趋势追踪</div>
+            <div class="update-time">最后更新: <span id="lastUpdate">加载中...</span></div>
         </header>
 
+        <!-- 今日概览 -->
+        <div class="overview-panel">
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="coin-icon btc">₿</div>
+                    <h3>BTC 0.9x Put Options</h3>
+                </div>
+                <div class="spot-price btc" id="btcSpot">$--</div>
+                <table class="options-table">
+                    <thead>
+                        <tr>
+                            <th>期限</th>
+                            <th>合约</th>
+                            <th>价格</th>
+                            <th>IV</th>
+                            <th>日均价格</th>
+                        </tr>
+                    </thead>
+                    <tbody id="btcOptionsTable">
+                        <tr><td colspan="5" style="text-align:center;color:#6e7681;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="coin-icon eth">Ξ</div>
+                    <h3>ETH 0.85x Put Options</h3>
+                </div>
+                <div class="spot-price eth" id="ethSpot">$--</div>
+                <table class="options-table">
+                    <thead>
+                        <tr>
+                            <th>期限</th>
+                            <th>合约</th>
+                            <th>价格</th>
+                            <th>IV</th>
+                            <th>日均价格</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ethOptionsTable">
+                        <tr><td colspan="5" style="text-align:center;color:#6e7681;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 比例分析 -->
+        <div class="ratio-analysis">
+            <h3>📈 日均价格比例分析</h3>
+            <div class="ratio-grid">
+                <div class="ratio-item">
+                    <div class="ratio-label">BTC 短期/中期</div>
+                    <div class="ratio-value" id="btcRatioSM">--</div>
+                </div>
+                <div class="ratio-item">
+                    <div class="ratio-label">BTC 短期/长期</div>
+                    <div class="ratio-value" id="btcRatioSL">--</div>
+                </div>
+                <div class="ratio-item">
+                    <div class="ratio-label">ETH 短期/中期</div>
+                    <div class="ratio-value" id="ethRatioSM">--</div>
+                </div>
+                <div class="ratio-item">
+                    <div class="ratio-label">ETH 短期/长期</div>
+                    <div class="ratio-value" id="ethRatioSL">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键变化 -->
+        <div class="key-changes" id="keyChanges" style="display:none;">
+            <h4>💡 关键变化</h4>
+            <ul id="changesList"></ul>
+        </div>
+
+        <!-- 时间切换 -->
         <div class="time-tabs">
+            <button class="tab-btn" data-range="7">7天</button>
             <button class="tab-btn" data-range="30">30天</button>
             <button class="tab-btn" data-range="90">3个月</button>
-            <button class="tab-btn active" data-range="all">全部</button>
+            <button class="tab-btn active" data-range="all">全部(2年)</button>
         </div>
 
-        <div class="stats-row">
-            <div class="stat-box">
-                <div class="stat-label">BTC 短/长比例</div>
-                <div class="stat-value btc" id="btcSl">--</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">BTC 短/中比例</div>
-                <div class="stat-value btc" id="btcSm">--</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">ETH 短/长比例</div>
-                <div class="stat-value eth" id="ethSl">--</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">ETH 短/中比例</div>
-                <div class="stat-value eth" id="ethSm">--</div>
-            </div>
-        </div>
-
+        <!-- 历史趋势图 -->
+        <h3 class="section-title">历史趋势 - 短长期比例</h3>
         <div class="charts-grid">
-            <!-- Chart 1: BTC Price -->
             <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin btc">🔶 BTC</span> 期权价格趋势
+                <div class="chart-header">
+                    <span class="chart-title">🔶 BTC 短/长期比例趋势</span>
+                    <span class="chart-subtitle">数值>1表示短期溢价(恐慌)</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chart1"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(20-35天)</span></div>
-                </div>
+                <div class="chart-container"><canvas id="chartBtcSL"></canvas></div>
             </div>
-
-            <!-- Chart 2: ETH Price -->
             <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin eth">🔷 ETH</span> 期权价格趋势
+                <div class="chart-header">
+                    <span class="chart-title">🔷 ETH 短/长期比例趋势</span>
+                    <span class="chart-subtitle">数值>1表示短期溢价(恐慌)</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chart2"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(20-35天)</span></div>
-                </div>
+                <div class="chart-container"><canvas id="chartEthSL"></canvas></div>
             </div>
+        </div>
 
-            <!-- Chart 3: BTC Daily -->
+        <h3 class="section-title">历史趋势 - 期限结构对比</h3>
+        <div class="charts-grid">
             <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin btc">🔶 BTC</span> 日均价格趋势
+                <div class="chart-header">
+                    <span class="chart-title">🔶 BTC 日均价格对比</span>
+                    <span class="chart-subtitle">短/中/长期</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chart3"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff9f40"></div><span>短期日均</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#9966ff"></div><span>中期日均</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div><span>长期日均</span></div>
-                </div>
+                <div class="chart-container"><canvas id="chartBtcDaily"></canvas></div>
             </div>
-
-            <!-- Chart 4: ETH Daily -->
             <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin eth">🔷 ETH</span> 日均价格趋势
+                <div class="chart-header">
+                    <span class="chart-title">🔷 ETH 日均价格对比</span>
+                    <span class="chart-subtitle">短/中/长期</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chart4"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff9f40"></div><span>短期日均</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#9966ff"></div><span>中期日均</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#00d4ff"></div><span>长期日均</span></div>
-                </div>
+                <div class="chart-container"><canvas id="chartEthDaily"></canvas></div>
             </div>
+        </div>
 
-            <!-- Chart 5: BTC Ratio -->
-            <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin btc">🔶 BTC</span> 日均价格比例
-                </div>
-                <div class="chart-container">
-                    <canvas id="chart5"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短/中</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>短/长</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>中/长</span></div>
-                </div>
-            </div>
-
-            <!-- Chart 6: ETH Ratio -->
-            <div class="chart-card">
-                <div class="chart-title">
-                    <span class="coin eth">🔷 ETH</span> 日均价格比例
-                </div>
-                <div class="chart-container">
-                    <canvas id="chart6"></canvas>
-                </div>
-                <div class="legend-custom">
-                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短/中</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>短/长</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>中/长</span></div>
-                </div>
+        <h3 class="section-title">历史统计</h3>
+        <div class="history-stats">
+            <div class="stats-grid" id="historyStats">
+                <div class="stat-box"><div class="stat-title">BTC 历史最高</div><div class="stat-number" id="btcMax">--</div></div>
+                <div class="stat-box"><div class="stat-title">BTC 历史最低</div><div class="stat-number" id="btcMin">--</div></div>
+                <div class="stat-box"><div class="stat-title">BTC 当前分位</div><div class="stat-number" id="btcPercentile">--</div></div>
+                <div class="stat-box"><div class="stat-title">数据天数</div><div class="stat-number" id="totalDays">--</div></div>
             </div>
         </div>
 
         <div class="footer">
-            <p>数据来源: Deribit | 数据范围: 2023-01 至 2026-02 | 模型: Kimi K2.5</p>
+            <p>数据来源: <span class="data-source">Deribit API</span> | 模型: Kimi K2.5</p>
+            <p>数据范围: 2023-01 至 2026-03 | 每8小时自动更新</p>
         </div>
     </div>
 
@@ -241,107 +405,171 @@
         let charts = {};
         let allData = {};
 
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(13, 17, 23, 0.95)',
-                    titleColor: '#58a6ff',
-                    bodyColor: '#c9d1d9',
-                    borderColor: '#30363d',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(ctx) {
-                            return ctx.dataset.label + ': ' + (ctx.parsed.y > 0.001 ? ctx.parsed.y.toFixed(4) : ctx.parsed.y.toFixed(6));
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { grid: { color: 'rgba(48, 54, 61, 0.3)' }, ticks: { color: '#6e7681', maxTicksLimit: 8 } },
-                y: { grid: { color: 'rgba(48, 54, 61, 0.3)' }, ticks: { color: '#6e7681' } }
-            }
-        };
-
         async function loadData() {
             const res = await fetch('charts_6_data.json');
             allData = await res.json();
             
-            // 过滤掉全为0的数据点
+            // 过滤掉全为null的数据点
             const validIndices = allData.dates.map((d, i) => {
-                return allData.btc_ratio.sl[i] > 0 || allData.eth_ratio.sl[i] > 0;
+                return allData.btc_ratio?.sl?.[i] != null || allData.eth_ratio?.sl?.[i] != null;
             }).map((v, i) => v ? i : -1).filter(i => i >= 0);
             
             allData.dates = validIndices.map(i => allData.dates[i]);
-            ['btc_price', 'eth_price', 'btc_daily', 'eth_daily', 'btc_ratio', 'eth_ratio'].forEach(key => {
+            ['btc_price', 'eth_price', 'btc_daily', 'eth_daily', 'btc_ratio', 'eth_ratio', 'btc_iv', 'eth_iv'].forEach(key => {
+                if (!allData[key]) return;
                 Object.keys(allData[key]).forEach(sub => {
-                    allData[key][sub] = validIndices.map(i => allData[key][sub][i]);
+                    allData[key][sub] = validIndices.map(i => allData[key][sub]?.[i] ?? null);
                 });
             });
             
+            updateOverview();
             initCharts();
-            updateStats();
             updateCharts('all');
+            updateHistoryStats();
+        }
+
+        function updateOverview() {
+            const lastIdx = allData.dates.length - 1;
+            const date = allData.dates[lastIdx];
+            
+            document.getElementById('lastUpdate').textContent = `${date} (每8小时更新)`;
+            
+            // 获取最新的价格数据（从价格数组获取）
+            const btcPrice = allData.btc_price?.short?.[lastIdx] > 0 ? allData.btc_price.short[lastIdx] : null;
+            const ethPrice = allData.eth_price?.short?.[lastIdx] > 0 ? allData.eth_price.short[lastIdx] : null;
+            
+            // 更新表格数据
+            updateOptionsTable('btc', lastIdx);
+            updateOptionsTable('eth', lastIdx);
+            
+            // 更新比例
+            const btcSL = allData.btc_ratio?.sl?.[lastIdx];
+            const btcSM = allData.btc_ratio?.sm?.[lastIdx];
+            const ethSL = allData.eth_ratio?.sl?.[lastIdx];
+            const ethSM = allData.eth_ratio?.sm?.[lastIdx];
+            
+            updateRatioDisplay('btcRatioSL', btcSL);
+            updateRatioDisplay('btcRatioSM', btcSM);
+            updateRatioDisplay('ethRatioSL', ethSL);
+            updateRatioDisplay('ethRatioSM', ethSM);
+            
+            // 关键变化
+            detectChanges(lastIdx);
+        }
+
+        function updateOptionsTable(currency, idx) {
+            const tbody = document.getElementById(`${currency}OptionsTable`);
+            const terms = [
+                { key: 'short', label: '短期(5-9天)', class: 'term-short' },
+                { key: 'medium', label: '中期(12-16天)', class: 'term-medium' },
+                { key: 'long', label: '长期(25-65天)', class: 'term-long' }
+            ];
+            
+            let html = '';
+            let hasData = false;
+            
+            terms.forEach(term => {
+                const price = allData[`${currency}_price`]?.[term.key]?.[idx];
+                const daily = allData[`${currency}_daily`]?.[term.key]?.[idx];
+                const iv = allData[`${currency}_iv`]?.[term.key]?.[idx];
+                
+                if (price > 0) {
+                    hasData = true;
+                    const priceStr = price > 0.001 ? price.toFixed(4) : price.toFixed(6);
+                    const dailyStr = daily > 0.0001 ? daily.toFixed(6) : daily.toFixed(8);
+                    html += `
+                        <tr>
+                            <td class="${term.class}">${term.label}</td>
+                            <td>--</td>
+                            <td>${priceStr} ${currency.toUpperCase()}</td>
+                            <td>${iv ? iv.toFixed(1) : '--'}%</td>
+                            <td>${dailyStr} ${currency.toUpperCase()}/天</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            if (!hasData) {
+                html = `<tr><td colspan="5" style="text-align:center;color:#6e7681;">今日暂无有效数据</td></tr>`;
+            }
+            
+            tbody.innerHTML = html;
+        }
+
+        function updateRatioDisplay(id, value) {
+            const el = document.getElementById(id);
+            if (!value || value <= 0) {
+                el.textContent = '--';
+                el.className = 'ratio-value';
+                return;
+            }
+            
+            el.textContent = value.toFixed(2) + 'x';
+            if (value > 1.5) el.className = 'ratio-value extreme';
+            else if (value > 1.2) el.className = 'ratio-value high';
+            else el.className = 'ratio-value normal';
+        }
+
+        function detectChanges(idx) {
+            if (idx < 1) return;
+            
+            const changes = [];
+            const btcSL = allData.btc_ratio?.sl?.[idx];
+            const btcSLPrev = allData.btc_ratio?.sl?.[idx - 1];
+            
+            if (btcSL > 0 && btcSLPrev > 0) {
+                const change = ((btcSL - btcSLPrev) / btcSLPrev * 100).toFixed(1);
+                if (Math.abs(change) > 10) {
+                    const dir = change > 0 ? '上升' : '回落';
+                    changes.push(`BTC短长期比例${dir}${Math.abs(change)}%，当前${btcSL.toFixed(2)}x`);
+                }
+            }
+            
+            if (changes.length > 0) {
+                document.getElementById('keyChanges').style.display = 'block';
+                document.getElementById('changesList').innerHTML = changes.map(c => `<li>${c}</li>`).join('');
+            }
         }
 
         function initCharts() {
-            const ctx1 = document.getElementById('chart1').getContext('2d');
-            charts.c1 = new Chart(ctx1, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '价格 (BTC)', color: '#8b949e' } } } }
-            });
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#c9d1d9' } },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                        titleColor: '#58a6ff',
+                        bodyColor: '#c9d1d9',
+                        borderColor: '#30363d',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(48, 54, 61, 0.3)' }, ticks: { color: '#6e7681', maxTicksLimit: 8 } },
+                    y: { grid: { color: 'rgba(48, 54, 61, 0.3)' }, ticks: { color: '#6e7681' } }
+                }
+            };
 
-            const ctx2 = document.getElementById('chart2').getContext('2d');
-            charts.c2 = new Chart(ctx2, {
+            // BTC 短长期比例
+            charts.btcSL = new Chart(document.getElementById('chartBtcSL'), {
                 type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '价格 (ETH)', color: '#8b949e' } } } }
-            });
-
-            const ctx3 = document.getElementById('chart3').getContext('2d');
-            charts.c3 = new Chart(ctx3, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短期日均', data: [], borderColor: '#ff9f40', backgroundColor: 'rgba(255,159,64,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中期日均', data: [], borderColor: '#9966ff', backgroundColor: 'rgba(153,102,255,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '长期日均', data: [], borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '日均价格', color: '#8b949e' } } } }
-            });
-
-            const ctx4 = document.getElementById('chart4').getContext('2d');
-            charts.c4 = new Chart(ctx4, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短期日均', data: [], borderColor: '#ff9f40', backgroundColor: 'rgba(255,159,64,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中期日均', data: [], borderColor: '#9966ff', backgroundColor: 'rgba(153,102,255,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '长期日均', data: [], borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '日均价格', color: '#8b949e' } } } }
-            });
-
-            const ctx5 = document.getElementById('chart5').getContext('2d');
-            charts.c5 = new Chart(ctx5, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短/中', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '短/长', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中/长', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { 
-                    ...commonOptions, 
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '短期/长期比例',
+                        data: [],
+                        borderColor: '#f7931a',
+                        backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    ...commonOptions,
                     plugins: {
                         ...commonOptions.plugins,
                         annotation: {
@@ -349,21 +577,28 @@
                                 line1: { type: 'line', yMin: 1, yMax: 1, borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, borderDash: [5, 5] }
                             }
                         }
-                    },
-                    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '比例', color: '#8b949e' } } } 
+                    }
                 }
             });
 
-            const ctx6 = document.getElementById('chart6').getContext('2d');
-            charts.c6 = new Chart(ctx6, {
+            // ETH 短长期比例
+            charts.ethSL = new Chart(document.getElementById('chartEthSL'), {
                 type: 'line',
-                data: { labels: [], datasets: [
-                    { label: '短/中', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '短/长', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
-                    { label: '中/长', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
-                ]},
-                options: { 
-                    ...commonOptions, 
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '短期/长期比例',
+                        data: [],
+                        borderColor: '#627eea',
+                        backgroundColor: 'rgba(98, 126, 234, 0.1)',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    ...commonOptions,
                     plugins: {
                         ...commonOptions.plugins,
                         annotation: {
@@ -371,9 +606,36 @@
                                 line1: { type: 'line', yMin: 1, yMax: 1, borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, borderDash: [5, 5] }
                             }
                         }
-                    },
-                    scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '比例', color: '#8b949e' } } } 
+                    }
                 }
+            });
+
+            // BTC 日均价格
+            charts.btcDaily = new Chart(document.getElementById('chartBtcDaily'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '短期', data: [], borderColor: '#ff6384', tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', tension: 0.3, pointRadius: 0 }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // ETH 日均价格
+            charts.ethDaily = new Chart(document.getElementById('chartEthDaily'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '短期', data: [], borderColor: '#ff6384', tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', tension: 0.3, pointRadius: 0 }
+                    ]
+                },
+                options: commonOptions
             });
         }
 
@@ -386,57 +648,51 @@
                 dates = dates.slice(sliceStart);
             }
 
-            const slice = (arr) => range === 'all' ? arr : arr.slice(sliceStart);
+            const slice = (arr) => arr ? (range === 'all' ? arr : arr.slice(sliceStart)) : [];
 
-            // Chart 1: BTC Price
-            charts.c1.data.labels = dates;
-            charts.c1.data.datasets[0].data = slice(allData.btc_price.short);
-            charts.c1.data.datasets[1].data = slice(allData.btc_price.medium);
-            charts.c1.data.datasets[2].data = slice(allData.btc_price.long);
-            charts.c1.update();
+            // BTC 短长期比例
+            charts.btcSL.data.labels = dates;
+            charts.btcSL.data.datasets[0].data = slice(allData.btc_ratio?.sl);
+            charts.btcSL.update();
 
-            // Chart 2: ETH Price
-            charts.c2.data.labels = dates;
-            charts.c2.data.datasets[0].data = slice(allData.eth_price.short);
-            charts.c2.data.datasets[1].data = slice(allData.eth_price.medium);
-            charts.c2.data.datasets[2].data = slice(allData.eth_price.long);
-            charts.c2.update();
+            // ETH 短长期比例
+            charts.ethSL.data.labels = dates;
+            charts.ethSL.data.datasets[0].data = slice(allData.eth_ratio?.sl);
+            charts.ethSL.update();
 
-            // Chart 3: BTC Daily
-            charts.c3.data.labels = dates;
-            charts.c3.data.datasets[0].data = slice(allData.btc_daily.short);
-            charts.c3.data.datasets[1].data = slice(allData.btc_daily.medium);
-            charts.c3.data.datasets[2].data = slice(allData.btc_daily.long);
-            charts.c3.update();
+            // BTC 日均价格
+            charts.btcDaily.data.labels = dates;
+            charts.btcDaily.data.datasets[0].data = slice(allData.btc_daily?.short);
+            charts.btcDaily.data.datasets[1].data = slice(allData.btc_daily?.medium);
+            charts.btcDaily.data.datasets[2].data = slice(allData.btc_daily?.long);
+            charts.btcDaily.update();
 
-            // Chart 4: ETH Daily
-            charts.c4.data.labels = dates;
-            charts.c4.data.datasets[0].data = slice(allData.eth_daily.short);
-            charts.c4.data.datasets[1].data = slice(allData.eth_daily.medium);
-            charts.c4.data.datasets[2].data = slice(allData.eth_daily.long);
-            charts.c4.update();
-
-            // Chart 5: BTC Ratio
-            charts.c5.data.labels = dates;
-            charts.c5.data.datasets[0].data = slice(allData.btc_ratio.sm);
-            charts.c5.data.datasets[1].data = slice(allData.btc_ratio.sl);
-            charts.c5.data.datasets[2].data = slice(allData.btc_ratio.ml);
-            charts.c5.update();
-
-            // Chart 6: ETH Ratio
-            charts.c6.data.labels = dates;
-            charts.c6.data.datasets[0].data = slice(allData.eth_ratio.sm);
-            charts.c6.data.datasets[1].data = slice(allData.eth_ratio.sl);
-            charts.c6.data.datasets[2].data = slice(allData.eth_ratio.ml);
-            charts.c6.update();
+            // ETH 日均价格
+            charts.ethDaily.data.labels = dates;
+            charts.ethDaily.data.datasets[0].data = slice(allData.eth_daily?.short);
+            charts.ethDaily.data.datasets[1].data = slice(allData.eth_daily?.medium);
+            charts.ethDaily.data.datasets[2].data = slice(allData.eth_daily?.long);
+            charts.ethDaily.update();
         }
 
-        function updateStats() {
-            const lastIdx = allData.dates.length - 1;
-            document.getElementById('btcSl').textContent = allData.btc_ratio.sl[lastIdx].toFixed(2) + 'x';
-            document.getElementById('btcSm').textContent = allData.btc_ratio.sm[lastIdx].toFixed(2) + 'x';
-            document.getElementById('ethSl').textContent = allData.eth_ratio.sl[lastIdx].toFixed(2) + 'x';
-            document.getElementById('ethSm').textContent = allData.eth_ratio.sm[lastIdx].toFixed(2) + 'x';
+        function updateHistoryStats() {
+            const btcRatios = allData.btc_ratio?.sl?.filter(x => x > 0) || [];
+            
+            if (btcRatios.length > 0) {
+                const max = Math.max(...btcRatios);
+                const min = Math.min(...btcRatios);
+                const current = btcRatios[btcRatios.length - 1];
+                const sorted = [...btcRatios].sort((a, b) => a - b);
+                const percentile = (sorted.indexOf(current) / sorted.length * 100).toFixed(1);
+                
+                document.getElementById('btcMax').textContent = max.toFixed(2) + 'x';
+                document.getElementById('btcMin').textContent = min.toFixed(2) + 'x';
+                document.getElementById('btcPercentile').textContent = percentile + '%';
+                document.getElementById('btcPercentile').className = 'stat-number ' + 
+                    (percentile > 80 ? 'extreme' : percentile > 60 ? 'high' : '');
+            }
+            
+            document.getElementById('totalDays').textContent = allData.dates.length;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
