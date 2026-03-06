@@ -34,10 +34,9 @@ def get_deribit_data():
     
     today = datetime.now()
     
-    def filter_by_expiry(instruments, days_range, target_strike_ratio):
+    def filter_by_expiry(instruments, days_range, target_strike, currency):
         """筛选符合到期日范围的合约"""
         min_days, max_days = days_range
-        target_strike = instruments[0]['strike'] * target_strike_ratio if instruments else 0
         
         candidates = []
         for inst in instruments:
@@ -48,11 +47,13 @@ def get_deribit_data():
             days_to_expiry = (expiry_date - today).days
             
             if min_days <= days_to_expiry <= max_days:
-                candidates.append({
-                    'instrument': inst['instrument_name'],
-                    'strike': inst['strike'],
-                    'days': days_to_expiry
-                })
+                # 只选择接近目标行权价的 (±5%范围内)
+                if abs(inst['strike'] - target_strike) / target_strike <= 0.05:
+                    candidates.append({
+                        'instrument': inst['instrument_name'],
+                        'strike': inst['strike'],
+                        'days': days_to_expiry
+                    })
         
         if not candidates:
             return None
@@ -69,14 +70,35 @@ def get_deribit_data():
                 timeout=30
             ).json()
             result = orderbook['result']
+            
+            # 使用 bid/ask 中间价，而不是 mark_price
+            bid = result.get('best_bid_price', 0)
+            ask = result.get('best_ask_price', 0)
+            mid_price = (bid + ask) / 2 if bid > 0 and ask > 0 else result.get('mark_price', 0)
+            
             return {
-                'mark_price': result.get('mark_price', 0),
+                'mark_price': mid_price,
                 'mark_iv': result.get('mark_iv', 0),
-                'bid': result.get('best_bid_price', 0),
-                'ask': result.get('best_ask_price', 0)
+                'bid': bid,
+                'ask': ask
             }
         except:
             return None
+    
+    def validate_data(short, medium, long, currency):
+        """验证数据是否合理"""
+        if not all([short, medium, long]):
+            return False, "缺失数据"
+        
+        # 检查价格是否合理 (短期价格不应低于长期的1/10)
+        if short['price'] < long['price'] * 0.1:
+            return False, f"短期价格异常低: {short['price']:.6f} vs 长期: {long['price']:.6f}"
+        
+        # 检查IV是否合理 (短期IV通常高于长期)
+        if short['iv'] < long['iv'] * 0.5:
+            return False, f"短期IV异常低: {short['iv']:.2f}% vs 长期: {long['iv']:.2f}%"
+        
+        return True, "OK"
     
     results = {}
     
@@ -84,10 +106,17 @@ def get_deribit_data():
         ('BTC', btc_instruments['result'], btc_price, 0.9),
         ('ETH', eth_instruments['result'], eth_price, 0.85)
     ]:
-        # 筛选合约
-        short_inst = filter_by_expiry(instruments, (3, 9), price * strike_ratio)
-        medium_inst = filter_by_expiry(instruments, (10, 16), price * strike_ratio)
-        long_inst = filter_by_expiry(instruments, (17, 35), price * strike_ratio)
+        target_strike = price * strike_ratio
+        
+        # 调整到期日范围: 短期至少5天，避免即将到期的异常
+        short_inst = filter_by_expiry(instruments, (5, 9), target_strike, currency)
+        medium_inst = filter_by_expiry(instruments, (10, 16), target_strike, currency)
+        long_inst = filter_by_expiry(instruments, (17, 30), target_strike, currency)
+        
+        print(f"\n{currency} 选中合约:")
+        print(f"  短期: {short_inst}")
+        print(f"  中期: {medium_inst}")
+        print(f"  长期: {long_inst}")
         
         results[currency] = {
             'index_price': price,
@@ -105,8 +134,23 @@ def get_deribit_data():
                         'price': price_data['mark_price'],
                         'daily_price': price_data['mark_price'] / days if days > 0 else 0,
                         'iv': price_data['mark_iv'],
-                        'days': days
+                        'days': days,
+                        'strike': inst['strike']
                     }
+        
+        # 验证数据
+        is_valid, msg = validate_data(
+            results[currency]['short'],
+            results[currency]['medium'],
+            results[currency]['long'],
+            currency
+        )
+        print(f"  验证结果: {msg}")
+        
+        if not is_valid:
+            print(f"  ⚠️ 数据异常，跳过今日{currency}数据")
+            results[currency]['skip'] = True
+            continue
         
         # 计算比例
         if all(results[currency][k] for k in ['short', 'medium', 'long']):
@@ -135,18 +179,30 @@ def update_data():
     # 检查今天是否已有数据
     if today in data['dates']:
         idx = data['dates'].index(today)
-        print(f"更新今天的数据: {today}")
+        print(f"\n更新今天的数据: {today}")
     else:
         idx = len(data['dates'])
         data['dates'].append(today)
-        print(f"添加新数据: {today}")
+        print(f"\n添加新数据: {today}")
     
     # 更新数据
     for curr in ['btc', 'eth']:
         curr_upper = curr.upper()
         if curr_upper not in new_data:
             continue
-            
+        
+        # 如果数据异常被标记跳过，则复制昨天的数据
+        if new_data[curr_upper].get('skip', False):
+            print(f"  {curr_upper}: 数据异常，使用昨日数据")
+            if idx > 0:
+                for exp in ['short', 'medium', 'long']:
+                    data[f'{curr}_price'][exp][idx] = data[f'{curr}_price'][exp][idx-1]
+                    data[f'{curr}_daily'][exp][idx] = data[f'{curr}_daily'][exp][idx-1]
+                    data[f'{curr}_iv'][exp][idx] = data[f'{curr}_iv'][exp][idx-1]
+                for r in ['sm', 'sl', 'ml']:
+                    data[f'{curr}_ratio'][r][idx] = data[f'{curr}_ratio'][r][idx-1]
+            continue
+        
         curr_data = new_data[curr_upper]
         
         # 价格和日均价格
@@ -169,14 +225,14 @@ def update_data():
                 data[f'{curr}_ratio'][r].append(ratios.get(r, 0))
             else:
                 data[f'{curr}_ratio'][r][idx] = ratios.get(r, 0)
+        
+        print(f"  {curr_upper} SL比例: {ratios.get('sl', 0):.2f}x")
     
     # 保存
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
     
-    print(f"✓ 数据已更新: {today}")
-    print(f"  BTC SL比例: {new_data.get('BTC', {}).get('ratios', {}).get('sl', 0):.2f}x")
-    print(f"  ETH SL比例: {new_data.get('ETH', {}).get('ratios', {}).get('sl', 0):.2f}x")
+    print(f"\n✓ 数据已更新: {today}")
 
 if __name__ == '__main__':
     update_data()
