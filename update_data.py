@@ -139,7 +139,8 @@ def get_deribit_data():
                         'daily_price': price_data['mark_price'] / days if days > 0 else 0,
                         'iv': price_data['mark_iv'],
                         'days': days,
-                        'strike': inst['strike']
+                        'strike': inst['strike'],
+                        'instrument': inst['instrument']
                     }
         
         # 验证数据
@@ -198,15 +199,20 @@ def update_data():
         # 如果数据异常被标记跳过，则填入 null（显示为空白）
         if new_data[curr_upper].get('skip', False):
             print(f"  {curr_upper}: 数据异常，该日留空")
+            # 确保instrument字段存在
+            if f'{curr}_instrument' not in data:
+                data[f'{curr}_instrument'] = {'short': [], 'medium': [], 'long': []}
             for exp in ['short', 'medium', 'long']:
                 if idx >= len(data[f'{curr}_price'][exp]):
                     data[f'{curr}_price'][exp].append(None)
                     data[f'{curr}_daily'][exp].append(None)
                     data[f'{curr}_iv'][exp].append(None)
+                    data[f'{curr}_instrument'][exp].append(None)
                 else:
                     data[f'{curr}_price'][exp][idx] = None
                     data[f'{curr}_daily'][exp][idx] = None
                     data[f'{curr}_iv'][exp][idx] = None
+                    data[f'{curr}_instrument'][exp][idx] = None
             for r in ['sm', 'sl', 'ml']:
                 if idx >= len(data[f'{curr}_ratio'][r]):
                     data[f'{curr}_ratio'][r].append(None)
@@ -216,6 +222,16 @@ def update_data():
         
         curr_data = new_data[curr_upper]
         
+        # 初始化instrument字段（如果不存在或长度不一致）
+        if f'{curr}_instrument' not in data:
+            data[f'{curr}_instrument'] = {'short': [], 'medium': [], 'long': []}
+        # 确保instrument列表长度与其他列表一致
+        for exp in ['short', 'medium', 'long']:
+            target_len = len(data[f'{curr}_price'][exp])
+            current_len = len(data[f'{curr}_instrument'][exp])
+            if current_len < target_len:
+                data[f'{curr}_instrument'][exp].extend([None] * (target_len - current_len))
+        
         # 价格和日均价格
         for exp in ['short', 'medium', 'long']:
             val = curr_data.get(exp, {})
@@ -224,10 +240,12 @@ def update_data():
                     data[f'{curr}_price'][exp].append(val.get('price', 0))
                     data[f'{curr}_daily'][exp].append(val.get('daily_price', 0))
                     data[f'{curr}_iv'][exp].append(val.get('iv', 0))
+                    data[f'{curr}_instrument'][exp].append(val.get('instrument', ''))
                 else:
                     data[f'{curr}_price'][exp][idx] = val.get('price', 0)
                     data[f'{curr}_daily'][exp][idx] = val.get('daily_price', 0)
                     data[f'{curr}_iv'][exp][idx] = val.get('iv', 0)
+                    data[f'{curr}_instrument'][exp][idx] = val.get('instrument', '')
         
         # 比例
         ratios = curr_data.get('ratios', {})

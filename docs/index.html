@@ -28,139 +28,124 @@
         .subtitle { color: #8b949e; font-size: 1em; }
         .update-time { color: #58a6ff; font-size: 0.9em; margin-top: 10px; }
 
-        /* 概览面板 */
-        .overview-panel {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        .overview-card {
-            background: rgba(22, 27, 34, 0.9);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .overview-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #30363d;
-        }
-        .overview-header .coin-icon {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1em; font-weight: bold;
-        }
-        .overview-header .coin-icon.btc { background: rgba(247, 147, 26, 0.2); color: #f7931a; }
-        .overview-header .coin-icon.eth { background: rgba(98, 126, 234, 0.2); color: #627eea; }
-        .overview-header h3 { color: #f0f6fc; font-size: 1.2em; }
-        
-        /* 现货价格 */
-        .spot-price {
-            font-size: 1.8em;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        .spot-price.btc { color: #f7931a; }
-        .spot-price.eth { color: #627eea; }
-
-        /* 期权详情表格 */
-        .options-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-        .options-table th, .options-table td {
-            padding: 10px 8px;
-            text-align: left;
-            border-bottom: 1px solid #30363d;
-        }
-        .options-table th {
-            color: #8b949e;
-            font-weight: 500;
-            font-size: 0.85em;
-        }
-        .options-table td {
-            color: #c9d1d9;
-        }
-        .options-table .term-short { color: #ff6384; }
-        .options-table .term-medium { color: #36a2eb; }
-        .options-table .term-long { color: #4bc0c0; }
-
-        /* 比例分析区域 */
-        .ratio-analysis {
+        /* 当前选中合约展示 */
+        .current-contracts {
             background: rgba(22, 27, 34, 0.9);
             border: 1px solid #30363d;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 25px;
         }
-        .ratio-analysis h3 {
+        .current-contracts h3 {
             color: #f0f6fc;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid #30363d;
+            font-size: 1.1em;
         }
-        .ratio-grid {
+        .contracts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .contract-card {
+            background: #21262d;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .contract-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .contract-header .coin-icon {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9em; font-weight: bold;
+        }
+        .contract-header .coin-icon.btc { background: rgba(247, 147, 26, 0.2); color: #f7931a; }
+        .contract-header .coin-icon.eth { background: rgba(98, 126, 234, 0.2); color: #627eea; }
+        .contract-header h4 { color: #f0f6fc; font-size: 1em; }
+        
+        .contract-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .contract-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(13, 17, 23, 0.5);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .contract-item .term {
+            font-weight: 500;
+        }
+        .contract-item .term.short { color: #ff6384; }
+        .contract-item .term.medium { color: #36a2eb; }
+        .contract-item .term.long { color: #4bc0c0; }
+        .contract-item .name {
+            color: #8b949e;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        /* 今日数据概览 */
+        .today-overview {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
+            margin-bottom: 25px;
         }
-        .ratio-item {
-            background: #21262d;
-            border-radius: 8px;
+        .overview-stat {
+            background: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            border-radius: 10px;
             padding: 15px;
             text-align: center;
         }
-        .ratio-label {
+        .overview-stat .label {
             font-size: 0.8em;
-            color: #8b949e;
-            margin-bottom: 5px;
+            color: #6e7681;
+            margin-bottom: 8px;
         }
-        .ratio-value {
-            font-size: 1.6em;
+        .overview-stat .value {
+            font-size: 1.5em;
             font-weight: 700;
+            color: #f0f6fc;
         }
-        .ratio-value.high { color: #f85149; }
-        .ratio-value.normal { color: #3fb950; }
-        .ratio-value.low { color: #58a6ff; }
+        .overview-stat .value.btc { color: #f7931a; }
+        .overview-stat .value.eth { color: #627eea; }
+        .overview-stat .value.high { color: #f85149; }
+        .overview-stat .value.normal { color: #3fb950; }
 
-        /* 关键变化 */
-        .key-changes {
-            background: rgba(248, 81, 73, 0.1);
-            border-left: 4px solid #f85149;
-            border-radius: 0 8px 8px 0;
-            padding: 15px 20px;
-            margin-bottom: 25px;
+        /* 时间切换 */
+        .time-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        .key-changes h4 {
-            color: #f85149;
-            margin-bottom: 10px;
+        .tab-btn {
+            padding: 8px 20px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
         }
-        .key-changes ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .key-changes li {
-            color: #c9d1d9;
-            padding: 5px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        .key-changes li::before {
-            content: "•";
-            color: #f85149;
-            position: absolute;
-            left: 5px;
-        }
+        .tab-btn:hover, .tab-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
 
         /* 图表区域 */
         .section-title {
-            font-size: 1.3em;
+            font-size: 1.2em;
             color: #f0f6fc;
             margin: 25px 0 15px;
             padding-left: 12px;
@@ -186,52 +171,18 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #30363d;
         }
-        .chart-title { font-size: 1.1em; color: #f0f6fc; }
+        .chart-title { font-size: 1.05em; color: #f0f6fc; display: flex; align-items: center; gap: 8px; }
         .chart-subtitle { font-size: 0.8em; color: #6e7681; }
-        .chart-container { position: relative; height: 320px; }
-
-        /* 时间切换 */
-        .time-tabs {
+        .chart-container { position: relative; height: 300px; }
+        .legend-custom {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            padding: 8px 20px;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #8b949e;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s;
-        }
-        .tab-btn:hover, .tab-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
-
-        /* 历史统计 */
-        .history-stats {
-            background: rgba(22, 27, 34, 0.8);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
+            margin-top: 10px;
+            font-size: 0.8em;
         }
-        .stat-box {
-            background: #21262d;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        .stat-title { font-size: 0.8em; color: #6e7681; margin-bottom: 8px; }
-        .stat-number { font-size: 1.4em; font-weight: 700; color: #f0f6fc; }
-        .stat-number.extreme { color: #f85149; }
-        .stat-number.high { color: #f0883e; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
 
         .footer {
             text-align: center;
@@ -251,8 +202,8 @@
         }
 
         @media (max-width: 1024px) {
-            .overview-panel, .charts-grid { grid-template-columns: 1fr; }
-            .ratio-grid, .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .contracts-grid, .charts-grid { grid-template-columns: 1fr; }
+            .today-overview { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -264,80 +215,54 @@
             <div class="update-time">最后更新: <span id="lastUpdate">加载中...</span></div>
         </header>
 
+        <!-- 当前选中合约 -->
+        <div class="current-contracts">
+            <h3>📋 当前监测合约</h3>
+            <div class="contracts-grid">
+                <div class="contract-card">
+                    <div class="contract-header">
+                        <div class="coin-icon btc">₿</div>
+                        <h4>BTC Put Options (0.9x)</h4>
+                    </div>
+                    <div class="contract-list" id="btcContracts">
+                        <div class="contract-item"><span class="term short">短期(5-9天)</span><span class="name">加载中...</span></div>
+                        <div class="contract-item"><span class="term medium">中期(12-16天)</span><span class="name">加载中...</span></div>
+                        <div class="contract-item"><span class="term long">长期(25-65天,近30天)</span><span class="name">加载中...</span></div>
+                    </div>
+                </div>
+
+                <div class="contract-card">
+                    <div class="contract-header">
+                        <div class="coin-icon eth">Ξ</div>
+                        <h4>ETH Put Options (0.85x)</h4>
+                    </div>
+                    <div class="contract-list" id="ethContracts">
+                        <div class="contract-item"><span class="term short">短期(5-9天)</span><span class="name">加载中...</span></div>
+                        <div class="contract-item"><span class="term medium">中期(12-16天)</span><span class="name">加载中...</span></div>
+                        <div class="contract-item"><span class="term long">长期(25-65天,近30天)</span><span class="name">加载中...</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 今日概览 -->
-        <div class="overview-panel">
-            <div class="overview-card">
-                <div class="overview-header">
-                    <div class="coin-icon btc">₿</div>
-                    <h3>BTC 0.9x Put Options</h3>
-                </div>
-                <div class="spot-price btc" id="btcSpot">$--</div>
-                <table class="options-table">
-                    <thead>
-                        <tr>
-                            <th>期限</th>
-                            <th>合约</th>
-                            <th>价格</th>
-                            <th>IV</th>
-                            <th>日均价格</th>
-                        </tr>
-                    </thead>
-                    <tbody id="btcOptionsTable">
-                        <tr><td colspan="5" style="text-align:center;color:#6e7681;">加载中...</td></tr>
-                    </tbody>
-                </table>
+        <div class="today-overview">
+            <div class="overview-stat">
+                <div class="label">BTC 短/长比例</div>
+                <div class="value btc" id="btcSL">--</div>
             </div>
-
-            <div class="overview-card">
-                <div class="overview-header">
-                    <div class="coin-icon eth">Ξ</div>
-                    <h3>ETH 0.85x Put Options</h3>
-                </div>
-                <div class="spot-price eth" id="ethSpot">$--</div>
-                <table class="options-table">
-                    <thead>
-                        <tr>
-                            <th>期限</th>
-                            <th>合约</th>
-                            <th>价格</th>
-                            <th>IV</th>
-                            <th>日均价格</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ethOptionsTable">
-                        <tr><td colspan="5" style="text-align:center;color:#6e7681;">加载中...</td></tr>
-                    </tbody>
-                </table>
+            <div class="overview-stat">
+                <div class="label">ETH 短/长比例</div>
+                <div class="value eth" id="ethSL">--</div>
             </div>
-        </div>
-
-        <!-- 比例分析 -->
-        <div class="ratio-analysis">
-            <h3>📈 日均价格比例分析</h3>
-            <div class="ratio-grid">
-                <div class="ratio-item">
-                    <div class="ratio-label">BTC 短期/中期</div>
-                    <div class="ratio-value" id="btcRatioSM">--</div>
-                </div>
-                <div class="ratio-item">
-                    <div class="ratio-label">BTC 短期/长期</div>
-                    <div class="ratio-value" id="btcRatioSL">--</div>
-                </div>
-                <div class="ratio-item">
-                    <div class="ratio-label">ETH 短期/中期</div>
-                    <div class="ratio-value" id="ethRatioSM">--</div>
-                </div>
-                <div class="ratio-item">
-                    <div class="ratio-label">ETH 短期/长期</div>
-                    <div class="ratio-value" id="ethRatioSL">--</div>
-                </div>
+            <div class="overview-stat">
+                <div class="label">BTC 短期 IV</div>
+                <div class="value" id="btcIV">--</div>
             </div>
-        </div>
-
-        <!-- 关键变化 -->
-        <div class="key-changes" id="keyChanges" style="display:none;">
-            <h4>💡 关键变化</h4>
-            <ul id="changesList"></ul>
+            <div class="overview-stat">
+                <div class="label">ETH 短期 IV</div>
+                <div class="value" id="ethIV">--</div>
+            </div>
         </div>
 
         <!-- 时间切换 -->
@@ -348,50 +273,63 @@
             <button class="tab-btn active" data-range="all">全部(2年)</button>
         </div>
 
-        <!-- 历史趋势图 -->
-        <h3 class="section-title">历史趋势 - 短长期比例</h3>
+        <!-- 趋势图1: 日均价格对比 -->
+        <h3 class="section-title">📈 日均价格趋势对比</h3>
         <div class="charts-grid">
             <div class="chart-card">
                 <div class="chart-header">
-                    <span class="chart-title">🔶 BTC 短/长期比例趋势</span>
-                    <span class="chart-subtitle">数值>1表示短期溢价(恐慌)</span>
-                </div>
-                <div class="chart-container"><canvas id="chartBtcSL"></canvas></div>
-            </div>
-            <div class="chart-card">
-                <div class="chart-header">
-                    <span class="chart-title">🔷 ETH 短/长期比例趋势</span>
-                    <span class="chart-subtitle">数值>1表示短期溢价(恐慌)</span>
-                </div>
-                <div class="chart-container"><canvas id="chartEthSL"></canvas></div>
-            </div>
-        </div>
-
-        <h3 class="section-title">历史趋势 - 期限结构对比</h3>
-        <div class="charts-grid">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <span class="chart-title">🔶 BTC 日均价格对比</span>
-                    <span class="chart-subtitle">短/中/长期</span>
+                    <span class="chart-title">🟠 BTC 日均价格对比</span>
+                    <span class="chart-subtitle">短期 vs 中期 vs 长期</span>
                 </div>
                 <div class="chart-container"><canvas id="chartBtcDaily"></canvas></div>
+                <div class="legend-custom">
+                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(25-65天)</span></div>
+                </div>
             </div>
+
             <div class="chart-card">
                 <div class="chart-header">
-                    <span class="chart-title">🔷 ETH 日均价格对比</span>
-                    <span class="chart-subtitle">短/中/长期</span>
+                    <span class="chart-title">🔵 ETH 日均价格对比</span>
+                    <span class="chart-subtitle">短期 vs 中期 vs 长期</span>
                 </div>
                 <div class="chart-container"><canvas id="chartEthDaily"></canvas></div>
+                <div class="legend-custom">
+                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(25-65天)</span></div>
+                </div>
             </div>
         </div>
 
-        <h3 class="section-title">历史统计</h3>
-        <div class="history-stats">
-            <div class="stats-grid" id="historyStats">
-                <div class="stat-box"><div class="stat-title">BTC 历史最高</div><div class="stat-number" id="btcMax">--</div></div>
-                <div class="stat-box"><div class="stat-title">BTC 历史最低</div><div class="stat-number" id="btcMin">--</div></div>
-                <div class="stat-box"><div class="stat-title">BTC 当前分位</div><div class="stat-number" id="btcPercentile">--</div></div>
-                <div class="stat-box"><div class="stat-title">数据天数</div><div class="stat-number" id="totalDays">--</div></div>
+        <!-- 趋势图2: IV对比 -->
+        <h3 class="section-title">📊 隐含波动率(IV)趋势对比</h3>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">🟠 BTC IV 趋势</span>
+                    <span class="chart-subtitle">短期 vs 中期 vs 长期</span>
+                </div>
+                <div class="chart-container"><canvas id="chartBtcIV"></canvas></div>
+                <div class="legend-custom">
+                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(25-65天)</span></div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">🔵 ETH IV 趋势</span>
+                    <span class="chart-subtitle">短期 vs 中期 vs 长期</span>
+                </div>
+                <div class="chart-container"><canvas id="chartEthIV"></canvas></div>
+                <div class="legend-custom">
+                    <div class="legend-item"><div class="legend-color" style="background:#ff6384"></div><span>短期(5-9天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#36a2eb"></div><span>中期(12-16天)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4bc0c0"></div><span>长期(25-65天)</span></div>
+                </div>
             </div>
         </div>
 
@@ -406,129 +344,91 @@
         let allData = {};
 
         async function loadData() {
-            const res = await fetch('charts_6_data.json');
-            allData = await res.json();
-            
-            // 过滤掉全为null的数据点
-            const validIndices = allData.dates.map((d, i) => {
-                return allData.btc_ratio?.sl?.[i] != null || allData.eth_ratio?.sl?.[i] != null;
-            }).map((v, i) => v ? i : -1).filter(i => i >= 0);
-            
-            allData.dates = validIndices.map(i => allData.dates[i]);
-            ['btc_price', 'eth_price', 'btc_daily', 'eth_daily', 'btc_ratio', 'eth_ratio', 'btc_iv', 'eth_iv'].forEach(key => {
-                if (!allData[key]) return;
-                Object.keys(allData[key]).forEach(sub => {
-                    allData[key][sub] = validIndices.map(i => allData[key][sub]?.[i] ?? null);
+            try {
+                const res = await fetch('charts_6_data.json');
+                allData = await res.json();
+                
+                // 过滤有效数据点
+                const validIndices = allData.dates.map((d, i) => {
+                    return allData.btc_ratio?.sl?.[i] != null || allData.eth_ratio?.sl?.[i] != null;
+                }).map((v, i) => v ? i : -1).filter(i => i >= 0);
+                
+                allData.dates = validIndices.map(i => allData.dates[i]);
+                ['btc_price', 'eth_price', 'btc_daily', 'eth_daily', 'btc_ratio', 'eth_ratio', 'btc_iv', 'eth_iv', 'btc_instrument', 'eth_instrument'].forEach(key => {
+                    if (!allData[key]) return;
+                    Object.keys(allData[key]).forEach(sub => {
+                        allData[key][sub] = validIndices.map(i => allData[key][sub]?.[i] ?? null);
+                    });
                 });
-            });
-            
-            updateOverview();
-            initCharts();
-            updateCharts('all');
-            updateHistoryStats();
+                
+                updateDisplay();
+                initCharts();
+                updateCharts('all');
+            } catch (e) {
+                console.error('加载数据失败:', e);
+            }
         }
 
-        function updateOverview() {
+        function updateDisplay() {
             const lastIdx = allData.dates.length - 1;
             const date = allData.dates[lastIdx];
             
-            document.getElementById('lastUpdate').textContent = `${date} (每8小时更新)`;
+            document.getElementById('lastUpdate').textContent = date;
             
-            // 获取最新的价格数据（从价格数组获取）
-            const btcPrice = allData.btc_price?.short?.[lastIdx] > 0 ? allData.btc_price.short[lastIdx] : null;
-            const ethPrice = allData.eth_price?.short?.[lastIdx] > 0 ? allData.eth_price.short[lastIdx] : null;
+            // 更新合约名称
+            updateContracts('btc', lastIdx);
+            updateContracts('eth', lastIdx);
             
-            // 更新表格数据
-            updateOptionsTable('btc', lastIdx);
-            updateOptionsTable('eth', lastIdx);
-            
-            // 更新比例
+            // 更新今日数据
             const btcSL = allData.btc_ratio?.sl?.[lastIdx];
-            const btcSM = allData.btc_ratio?.sm?.[lastIdx];
             const ethSL = allData.eth_ratio?.sl?.[lastIdx];
-            const ethSM = allData.eth_ratio?.sm?.[lastIdx];
+            const btcIV = allData.btc_iv?.short?.[lastIdx];
+            const ethIV = allData.eth_iv?.short?.[lastIdx];
             
-            updateRatioDisplay('btcRatioSL', btcSL);
-            updateRatioDisplay('btcRatioSM', btcSM);
-            updateRatioDisplay('ethRatioSL', ethSL);
-            updateRatioDisplay('ethRatioSM', ethSM);
-            
-            // 关键变化
-            detectChanges(lastIdx);
+            updateValue('btcSL', btcSL, 'x');
+            updateValue('ethSL', ethSL, 'x');
+            updateValue('btcIV', btcIV, '%');
+            updateValue('ethIV', ethIV, '%');
         }
 
-        function updateOptionsTable(currency, idx) {
-            const tbody = document.getElementById(`${currency}OptionsTable`);
+        function updateContracts(currency, idx) {
+            const container = document.getElementById(`${currency}Contracts`);
+            const instruments = allData[`${currency}_instrument`];
+            
+            if (!instruments) return;
+            
             const terms = [
-                { key: 'short', label: '短期(5-9天)', class: 'term-short' },
-                { key: 'medium', label: '中期(12-16天)', class: 'term-medium' },
-                { key: 'long', label: '长期(25-65天)', class: 'term-long' }
+                { key: 'short', label: '短期(5-9天)', class: 'short' },
+                { key: 'medium', label: '中期(12-16天)', class: 'medium' },
+                { key: 'long', label: '长期(25-65天,近30天)', class: 'long' }
             ];
             
             let html = '';
-            let hasData = false;
-            
             terms.forEach(term => {
-                const price = allData[`${currency}_price`]?.[term.key]?.[idx];
-                const daily = allData[`${currency}_daily`]?.[term.key]?.[idx];
-                const iv = allData[`${currency}_iv`]?.[term.key]?.[idx];
-                
-                if (price > 0) {
-                    hasData = true;
-                    const priceStr = price > 0.001 ? price.toFixed(4) : price.toFixed(6);
-                    const dailyStr = daily > 0.0001 ? daily.toFixed(6) : daily.toFixed(8);
-                    html += `
-                        <tr>
-                            <td class="${term.class}">${term.label}</td>
-                            <td>--</td>
-                            <td>${priceStr} ${currency.toUpperCase()}</td>
-                            <td>${iv ? iv.toFixed(1) : '--'}%</td>
-                            <td>${dailyStr} ${currency.toUpperCase()}/天</td>
-                        </tr>
-                    `;
-                }
+                const name = instruments[term.key]?.[idx] || '暂无数据';
+                html += `
+                    <div class="contract-item">
+                        <span class="term ${term.class}">${term.label}</span>
+                        <span class="name">${name}</span>
+                    </div>
+                `;
             });
             
-            if (!hasData) {
-                html = `<tr><td colspan="5" style="text-align:center;color:#6e7681;">今日暂无有效数据</td></tr>`;
-            }
-            
-            tbody.innerHTML = html;
+            container.innerHTML = html;
         }
 
-        function updateRatioDisplay(id, value) {
+        function updateValue(id, value, unit) {
             const el = document.getElementById(id);
             if (!value || value <= 0) {
                 el.textContent = '--';
-                el.className = 'ratio-value';
+                el.className = 'value';
                 return;
             }
             
-            el.textContent = value.toFixed(2) + 'x';
-            if (value > 1.5) el.className = 'ratio-value extreme';
-            else if (value > 1.2) el.className = 'ratio-value high';
-            else el.className = 'ratio-value normal';
-        }
-
-        function detectChanges(idx) {
-            if (idx < 1) return;
-            
-            const changes = [];
-            const btcSL = allData.btc_ratio?.sl?.[idx];
-            const btcSLPrev = allData.btc_ratio?.sl?.[idx - 1];
-            
-            if (btcSL > 0 && btcSLPrev > 0) {
-                const change = ((btcSL - btcSLPrev) / btcSLPrev * 100).toFixed(1);
-                if (Math.abs(change) > 10) {
-                    const dir = change > 0 ? '上升' : '回落';
-                    changes.push(`BTC短长期比例${dir}${Math.abs(change)}%，当前${btcSL.toFixed(2)}x`);
-                }
-            }
-            
-            if (changes.length > 0) {
-                document.getElementById('keyChanges').style.display = 'block';
-                document.getElementById('changesList').innerHTML = changes.map(c => `<li>${c}</li>`).join('');
-            }
+            el.textContent = value.toFixed(2) + unit;
+            if (value > 1.5) el.className = 'value high';
+            else if (value > 1.2) el.className = 'value btc';
+            else el.className = 'value normal';
         }
 
         function initCharts() {
@@ -537,7 +437,7 @@
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { position: 'top', labels: { color: '#c9d1d9' } },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: 'rgba(13, 17, 23, 0.95)',
                         titleColor: '#58a6ff',
@@ -552,76 +452,18 @@
                 }
             };
 
-            // BTC 短长期比例
-            charts.btcSL = new Chart(document.getElementById('chartBtcSL'), {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '短期/长期比例',
-                        data: [],
-                        borderColor: '#f7931a',
-                        backgroundColor: 'rgba(247, 147, 26, 0.1)',
-                        fill: false,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    plugins: {
-                        ...commonOptions.plugins,
-                        annotation: {
-                            annotations: {
-                                line1: { type: 'line', yMin: 1, yMax: 1, borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, borderDash: [5, 5] }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // ETH 短长期比例
-            charts.ethSL = new Chart(document.getElementById('chartEthSL'), {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '短期/长期比例',
-                        data: [],
-                        borderColor: '#627eea',
-                        backgroundColor: 'rgba(98, 126, 234, 0.1)',
-                        fill: false,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    plugins: {
-                        ...commonOptions.plugins,
-                        annotation: {
-                            annotations: {
-                                line1: { type: 'line', yMin: 1, yMax: 1, borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, borderDash: [5, 5] }
-                            }
-                        }
-                    }
-                }
-            });
-
             // BTC 日均价格
             charts.btcDaily = new Chart(document.getElementById('chartBtcDaily'), {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
-                        { label: '短期', data: [], borderColor: '#ff6384', tension: 0.3, pointRadius: 0 },
-                        { label: '中期', data: [], borderColor: '#36a2eb', tension: 0.3, pointRadius: 0 },
-                        { label: '长期', data: [], borderColor: '#4bc0c0', tension: 0.3, pointRadius: 0 }
+                        { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
                     ]
                 },
-                options: commonOptions
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '日均价格 (BTC)', color: '#8b949e' } } } }
             });
 
             // ETH 日均价格
@@ -630,12 +472,40 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: '短期', data: [], borderColor: '#ff6384', tension: 0.3, pointRadius: 0 },
-                        { label: '中期', data: [], borderColor: '#36a2eb', tension: 0.3, pointRadius: 0 },
-                        { label: '长期', data: [], borderColor: '#4bc0c0', tension: 0.3, pointRadius: 0 }
+                        { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
                     ]
                 },
-                options: commonOptions
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: '日均价格 (ETH)', color: '#8b949e' } } } }
+            });
+
+            // BTC IV
+            charts.btcIV = new Chart(document.getElementById('chartBtcIV'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
+                    ]
+                },
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: 'IV (%)', color: '#8b949e' } } } }
+            });
+
+            // ETH IV
+            charts.ethIV = new Chart(document.getElementById('chartEthIV'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '短期', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '中期', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', fill: false, tension: 0.3, pointRadius: 0 },
+                        { label: '长期', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', fill: false, tension: 0.3, pointRadius: 0 }
+                    ]
+                },
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, title: { display: true, text: 'IV (%)', color: '#8b949e' } } } }
             });
         }
 
@@ -650,16 +520,6 @@
 
             const slice = (arr) => arr ? (range === 'all' ? arr : arr.slice(sliceStart)) : [];
 
-            // BTC 短长期比例
-            charts.btcSL.data.labels = dates;
-            charts.btcSL.data.datasets[0].data = slice(allData.btc_ratio?.sl);
-            charts.btcSL.update();
-
-            // ETH 短长期比例
-            charts.ethSL.data.labels = dates;
-            charts.ethSL.data.datasets[0].data = slice(allData.eth_ratio?.sl);
-            charts.ethSL.update();
-
             // BTC 日均价格
             charts.btcDaily.data.labels = dates;
             charts.btcDaily.data.datasets[0].data = slice(allData.btc_daily?.short);
@@ -673,26 +533,20 @@
             charts.ethDaily.data.datasets[1].data = slice(allData.eth_daily?.medium);
             charts.ethDaily.data.datasets[2].data = slice(allData.eth_daily?.long);
             charts.ethDaily.update();
-        }
 
-        function updateHistoryStats() {
-            const btcRatios = allData.btc_ratio?.sl?.filter(x => x > 0) || [];
-            
-            if (btcRatios.length > 0) {
-                const max = Math.max(...btcRatios);
-                const min = Math.min(...btcRatios);
-                const current = btcRatios[btcRatios.length - 1];
-                const sorted = [...btcRatios].sort((a, b) => a - b);
-                const percentile = (sorted.indexOf(current) / sorted.length * 100).toFixed(1);
-                
-                document.getElementById('btcMax').textContent = max.toFixed(2) + 'x';
-                document.getElementById('btcMin').textContent = min.toFixed(2) + 'x';
-                document.getElementById('btcPercentile').textContent = percentile + '%';
-                document.getElementById('btcPercentile').className = 'stat-number ' + 
-                    (percentile > 80 ? 'extreme' : percentile > 60 ? 'high' : '');
-            }
-            
-            document.getElementById('totalDays').textContent = allData.dates.length;
+            // BTC IV
+            charts.btcIV.data.labels = dates;
+            charts.btcIV.data.datasets[0].data = slice(allData.btc_iv?.short);
+            charts.btcIV.data.datasets[1].data = slice(allData.btc_iv?.medium);
+            charts.btcIV.data.datasets[2].data = slice(allData.btc_iv?.long);
+            charts.btcIV.update();
+
+            // ETH IV
+            charts.ethIV.data.labels = dates;
+            charts.ethIV.data.datasets[0].data = slice(allData.eth_iv?.short);
+            charts.ethIV.data.datasets[1].data = slice(allData.eth_iv?.medium);
+            charts.ethIV.data.datasets[2].data = slice(allData.eth_iv?.long);
+            charts.ethIV.update();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
