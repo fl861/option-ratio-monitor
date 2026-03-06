@@ -34,7 +34,7 @@ def get_deribit_data():
     
     today = datetime.now()
     
-    def filter_by_expiry(instruments, days_range, target_strike, currency):
+    def filter_by_expiry(instruments, days_range, target_strike, currency, prefer_days=None):
         """筛选符合到期日范围的合约"""
         min_days, max_days = days_range
         
@@ -58,8 +58,12 @@ def get_deribit_data():
         if not candidates:
             return None
         
-        # 找最接近目标行权价的
-        closest = min(candidates, key=lambda x: abs(x['strike'] - target_strike))
+        # 如果有 prefer_days，优先选择最接近该天数的
+        if prefer_days is not None:
+            closest = min(candidates, key=lambda x: (abs(x['days'] - prefer_days), abs(x['strike'] - target_strike)))
+        else:
+            # 否则选择最接近目标行权价的
+            closest = min(candidates, key=lambda x: abs(x['strike'] - target_strike))
         return closest
     
     def get_option_price(instrument_name):
@@ -108,10 +112,10 @@ def get_deribit_data():
     ]:
         target_strike = price * strike_ratio
         
-        # 调整到期日范围: 短期至少5天，避免即将到期的异常
+        # 到期日选择策略: 短5-9天 / 中12-16天 / 长25-65天(最接近30天)
         short_inst = filter_by_expiry(instruments, (5, 9), target_strike, currency)
-        medium_inst = filter_by_expiry(instruments, (10, 16), target_strike, currency)
-        long_inst = filter_by_expiry(instruments, (17, 30), target_strike, currency)
+        medium_inst = filter_by_expiry(instruments, (12, 16), target_strike, currency)
+        long_inst = filter_by_expiry(instruments, (25, 65), target_strike, currency, prefer_days=30)
         
         print(f"\n{currency} 选中合约:")
         print(f"  短期: {short_inst}")
